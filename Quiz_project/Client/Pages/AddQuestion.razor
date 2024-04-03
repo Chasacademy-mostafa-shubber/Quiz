@@ -1,0 +1,97 @@
+﻿@page "/addquestion"
+@inject HttpClient http
+@inject NavigationManager navigation
+
+<h3>Add Question</h3>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="form-group">
+            <label for="QuestionName"> Question Name *</label>
+            <input form="QuestionName" class="form-control" @bind="@Question.QuestionName" />
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="form-group">
+            <label for="Option1"> Option 1 </label>
+            <input form="Option1" class="form-control" @bind="@Question.Option1" />
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="form-group">
+            <label for="Option2"> Option 2 </label>
+            <input form="Option2" class="form-control" @bind="@Question.Option2" />
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="form-group">
+            <label for="Option3"> Option 3 </label>
+            <input form="Option3" class="form-control" @bind="@Question.Option3" />
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="form-group">
+            <label for="Option4"> Option 4 </label>
+            <input form="Option4" class="form-control" @bind="@Question.Option4" />
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="form-group">
+            <label for="ImageUrl"> Image url </label>
+            <input form="ImageUrl" class="form-control" @bind="@Question.ImageUrl" />
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="form-group">
+            <label for="VideoUrl"> Video url </label>
+            <input form="VideoUrl" class="form-control" @bind="@Question.VideoUrl" />
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="form-group">
+            <label for="CorrectAnswer"> Correct Answer *</label>
+            <input form="CorrectAnswer" class="form-control" @bind="@Question.CorrectAnswer" />
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="form-group">
+            <label for="QuizId"> Quiz *</label>
+            <select class="form-select" @bind="@Question.QuizId" aria-label="Default select example">
+                @foreach(var item in QuizList)
+                {
+                    <option selected>Open this select menu</option>
+                    <option value="@item.Id">@item.Title</option>
+                   
+                }
+            </select>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-4">
+        <div class="form-group">
+            <input type="button" class="btn btn-primary" @onclick="@Save" value="Save" />
+        </div>
+    </div>
+</div>
+
+
+@code {
+
+    [Parameter]
+    public int Id { get; set; }
+
+    QuestionViewModel Question = new QuestionViewModel();
+    List<QuizViewModel> QuizList = new List<QuizViewModel>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        QuizList = await http.GetFromJsonAsync<List<QuizViewModel>>("api/Quiz/MyQuizList");
+    }
+
+    protected  async Task Save()
+    {
+        await http.PostAsJsonAsync($"api/Quiz/AddNewQuestion", Question);
+        navigation.NavigateTo("mypage");
+    }
+}

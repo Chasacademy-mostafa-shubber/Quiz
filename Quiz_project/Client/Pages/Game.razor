@@ -1,0 +1,136 @@
+﻿@page "/game/{Id:int}"
+@inject HttpClient http
+@inject NavigationManager navigation
+
+@if (QuestionList.Count() == 0)
+{
+    <h2>This quiz dont have any question</h2>
+}
+
+@if (QuestionList.Count()> 0)
+{
+    <div class="row">
+        <h3>@QuestionList[currentIndex].QuestionName</h3>
+    </div>
+
+    if(QuestionList[currentIndex].ImageUrl != null)
+    {
+        <div class="row">
+            <div class="col-md-8">
+            <img src="@QuestionList[currentIndex].ImageUrl"  />
+            </div>
+        </div>
+    } 
+    @if (QuestionList[currentIndex].VideoUrl != null)
+    {
+       <div class="row">
+            <div class="col-md-8">
+        <iframe
+                src="@QuestionList[currentIndex].VideoUrl">
+        </iframe>
+        </div>
+       </div>
+    }
+    @if (QuestionList[currentIndex].Option1 != null && QuestionList[currentIndex].Option2 != null &&
+                                   QuestionList[currentIndex].Option3 != null && QuestionList[currentIndex].Option4 != null)
+    {
+        <div class="row">
+            <div class="col-md-4">
+                <select class="form-select" aria-label="Default select example" @bind="SelectValue">
+                    <option selected>Open this select menu</option>
+                    <option value="@QuestionList[currentIndex].Option1">@QuestionList[currentIndex].Option1</option>
+                    <option value="@QuestionList[currentIndex].Option2">@QuestionList[currentIndex].Option2</option>
+                    <option value="@QuestionList[currentIndex].Option3">@QuestionList[currentIndex].Option3</option>
+                    <option value="@QuestionList[currentIndex].Option4">@QuestionList[currentIndex].Option4</option>
+
+                </select>
+              </div>
+        </div>
+    }
+    @if (QuestionList[currentIndex].Option1 == null && QuestionList[currentIndex].Option2 == null &&
+                                QuestionList[currentIndex].Option3 == null && QuestionList[currentIndex].Option4 == null)
+    {
+        <div class="col-md-4">
+            <div class="form-group">
+                <label> Free text</label>
+                <input form="Freetext" class="form-control" @bind="SelectValue" />
+            </div>
+        </div>
+    }
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="form-group">
+                <input type="button" class="btn btn-primary" @onclick="@Save" value="Answer" />
+            </div>
+        </div>
+    </div>
+    <p>Remainingtime: @Timer</p>
+}
+
+
+
+
+
+@code {
+
+    [Parameter]
+    public int Id { get; set; }
+    public string SelectValue { get; set; }
+    int currentIndex = 0;
+    int Timer = 200;
+
+
+    List<QuestionViewModel> QuestionList = new List<QuestionViewModel>();
+    QuizGameViewModel QuizGame = new QuizGameViewModel();
+
+    protected override async Task OnInitializedAsync()
+    {      
+        QuestionList = await http.GetFromJsonAsync<List<QuestionViewModel>>($"api/Quiz/GetQuestions/{Id}");
+        StartTimerAsync();
+    }
+
+    protected async Task Save()
+    {
+        if (SelectValue == QuestionList[currentIndex].CorrectAnswer)
+        {
+            QuizGame.Point = 1;
+        }
+
+        if (SelectValue != QuestionList[currentIndex].CorrectAnswer)
+        {
+            QuizGame.Point = 0;
+        }
+
+        await http.PostAsJsonAsync($"api/Quiz/PlayQuiz/{Id}", QuizGame);
+        NextQuestion();
+
+    }
+
+    public async void StartTimerAsync()
+    {     
+        while (Timer > 0)
+        {
+            Timer--;
+            StateHasChanged();
+            await Task.Delay(1000);
+        }
+
+        if (Timer == 0)
+        {
+            navigation.NavigateTo("allquizzes");
+        }
+    }
+
+
+    public void NextQuestion()
+    {
+        currentIndex++;     
+
+        if (currentIndex >= QuestionList.Count())
+        {
+            navigation.NavigateTo("allquizzes");
+        }
+       
+    }
+}

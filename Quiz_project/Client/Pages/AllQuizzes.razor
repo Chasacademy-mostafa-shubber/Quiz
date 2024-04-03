@@ -1,0 +1,35 @@
+﻿@page "/allquizzes"
+@inject HttpClient http
+
+@if (QuizList.Count() == 0)
+{
+    <h1>The list is empty</h1>
+}
+
+else
+{
+    <ul>
+        @foreach (var item in QuizList)
+        {
+            <li>
+                <a href="game/@item.Id">@item.Title</a>
+                
+            </li>
+        }
+    </ul>
+}
+
+
+
+@code {
+
+    List<QuizViewModel> QuizList = new List<QuizViewModel>();
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        QuizList = await http.GetFromJsonAsync<List<QuizViewModel>>("api/Quiz/QuizList");
+
+    }
+    
+}
