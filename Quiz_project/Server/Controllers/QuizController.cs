@@ -78,7 +78,6 @@ namespace Quiz_project.Server.Controllers
         public IActionResult GetAllQuizzes()
         {
             var output = (from q in _context.Quizzes
-                          
                           select new QuizViewModel
                           {
                               Id = q.Id,
@@ -113,7 +112,7 @@ namespace Quiz_project.Server.Controllers
         [HttpPost("PlayQuiz/{Id}")]
         public IActionResult Play(int Id, QuizGameViewModel model)
         {
-            var quizId = _context.QuizGames.FirstOrDefault(x => x.QuizId == Id);
+            var quizId = _context.QuizGames.FirstOrDefault(x => x.QuizId == Id && x.UserId== GetUserId());
 
             if (quizId == null)
             {
